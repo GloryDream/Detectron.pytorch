@@ -141,7 +141,7 @@ Download them and put them into the `{repo_root}/data/pretrained_model`.
 
 You can the following command to download them all:
 
-- extra required packages: `argparse_color_formater`, `colorama`, `requests`
+- extra required packages: `argparse-color-formatter`, `colorama`, `requests`
 
 ```
 python tools/download_imagenet_weights.py
