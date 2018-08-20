@@ -17,6 +17,7 @@ matplotlib.use('Agg')
 
 import numpy as np
 import cv2
+import shutil
 
 import torch
 import torch.nn as nn
@@ -97,7 +98,7 @@ def main():
     prefix_path = args.output_dir+'_results'
 
     if os.path.exists(prefix_path):
-        os.rmdir(prefix_path)
+        shutil.rmtree(prefix_path)
         os.mkdir(prefix_path)
     else:
         os.mkdir(prefix_path)
@@ -149,7 +150,7 @@ def main():
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    coco_instance = COCO('/home/xinyu/dataset/coco/annotations/instances_val2017.json')
+    coco_instance = COCO('/home/xinyu/dataset/coco/annotations/instances_train2017.json')
     for i in xrange(num_images):
         print('img', i)
         im = cv2.imread(imglist[i])
