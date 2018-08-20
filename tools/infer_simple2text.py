@@ -22,6 +22,7 @@ import shutil
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+from tqdm import tqdm
 
 import _init_paths
 import nn as mynn
@@ -149,8 +150,7 @@ def main():
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    for i in xrange(num_images):
-        print('img', i)
+    for i in tqdm(range(num_images)):
         im = cv2.imread(imglist[i])
         assert im is not None
 
