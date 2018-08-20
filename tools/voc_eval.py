@@ -9,6 +9,28 @@ import os
 import numpy as np
 import xml.etree.ElementTree as ET
 import pickle
+import argparse
+
+
+def parse_args():
+    """Parse in command line arguments"""
+    parser = argparse.ArgumentParser(description='Evaluate VOC format results')
+
+    parser.add_argument(
+        '--results', required=True,
+        help='the directory of predicted txt file')
+
+    parser.add_argument(
+        '--annotations', required=True,
+        help='the directory of annotations xml files')
+
+    parser.add_argument(
+        '--file_list', required=True,
+        help='the txt file containing all image names')
+
+    args = parser.parse_args()
+
+    return args
 
 
 def parse_rec(filename):
@@ -34,6 +56,7 @@ def parse_rec(filename):
         objects.append(obj_struct)
 
     return objects
+
 
 # borrow from https://github.com/rbgirshick/py-faster-rcnn/blob/master/lib/datasets/voc_eval.py#L31-#L62
 def voc_ap(rec, prec, use_07_metric=False):
@@ -68,6 +91,7 @@ def voc_ap(rec, prec, use_07_metric=False):
         # and sum (\Delta recall) * prec
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
+
 
 # borrow from https://github.com/rbgirshick/py-faster-rcnn/blob/master/lib/datasets/voc_eval.py#L64-#L200
 def voc_eval(detpath, annopath, imagesetfile, classname, 
@@ -116,11 +140,11 @@ def voc_eval(detpath, annopath, imagesetfile, classname,
                     i + 1, len(imagenames)))
         # save
         print('Saving cached annotations to {:s}'.format(cachefile))
-        with open(cachefile, 'w') as f:
+        with open(cachefile, 'wb') as f:
             pickle.dump(recs, f)
     else:
         # load
-        with open(cachefile, 'r') as f:
+        with open(cachefile, 'rb') as f:
             recs = pickle.load(f)
 
     # extract gt objects for this class
@@ -159,6 +183,8 @@ def voc_eval(detpath, annopath, imagesetfile, classname,
     tp = np.zeros(nd)
     fp = np.zeros(nd)
     for d in range(nd):
+        if image_ids[d] not in class_recs:
+            continue
         R = class_recs[image_ids[d]]
         bb = BB[d, :].astype(float)
         ovmax = -np.inf
@@ -206,15 +232,17 @@ def voc_eval(detpath, annopath, imagesetfile, classname,
 
     return rec, prec, ap
 
-def calculate_map(method, classes, res_dir='.'):
+
+def calculate_map(args, classes):
     """ Calculate a specific dehazed method's mAP 
     Args:
         method(str): dehazd method, ex. DehazeNet, AOD, etc.
         classes(list of strs): classes of interested
         res_dir(str): detection results directory
     """
-    annopath = os.path.join('Annotations', '{}.xml')
-    imagesetfile = method + '.txt'
+    method = args.results
+    annopath = os.path.join(args.annotations, '{}.xml')
+    imagesetfile = args.file_list
     cachedir = 'annotations_cache'
     # Added for convinient
     cachefile = os.path.join(cachedir, 'annots.pkl')
@@ -228,8 +256,8 @@ def calculate_map(method, classes, res_dir='.'):
     for i, cls in enumerate(classes):
         if cls == '__background__':
             continue
-        filename = "{}/{}/comp4_det_test_{}.txt".format(
-            res_dir, method, cls)
+        filename = "{}/{}.txt".format(
+            args.results, cls)
         rec, prec, ap = voc_eval(
             filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
             use_07_metric=use_07_metric)
@@ -246,8 +274,8 @@ def calculate_map(method, classes, res_dir='.'):
     print('~~~~~~~~')
     print('')
 
+
 if __name__ == '__main__':
-    methods = ['DehazeNet', 'FVR']
-    classes = ['person', 'bicycle', 'car', 'bus', 'motorbike']
-    for method in methods:
-        calculate_map(method, classes)
+    args = parse_args()
+    classes = ['person', 'bicycle', 'car', 'bus', 'motorcycle']
+    calculate_map(args, classes)
