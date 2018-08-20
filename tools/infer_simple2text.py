@@ -102,6 +102,8 @@ def main():
     if os.path.exists(prefix_path):
         os.rmdir(prefix_path)
         os.mkdir(prefix_path)
+    else:
+        os.mkdir(prefix_path)
 
     if args.dataset.startswith("coco"):
         dataset = datasets.get_coco_dataset()
