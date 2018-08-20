@@ -22,7 +22,6 @@ import shutil
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from pycocotools.coco import COCO
 
 import _init_paths
 import nn as mynn
@@ -150,7 +149,6 @@ def main():
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    coco_instance = COCO('/home/xinyu/dataset/coco/annotations/instances_train2017.json')
     for i in xrange(num_images):
         print('img', i)
         im = cv2.imread(imglist[i])
@@ -171,10 +169,7 @@ def main():
         voc_boxes[:, 3:5] = boxes[:, 0:2] + boxes[:, 2:4] + 1
 
         for instance_idx, cls_idx in enumerate(classes):
-            if cls_idx in coco_instance.cats:
-                cls_name = coco_instance.cats[cls_idx]['name']
-            else:
-                cls_name = str(cls_idx)
+            cls_name = dataset.classes[cls_idx]
             f = open(os.path.join(prefix_path, cls_name+".txt"), "a+")
             f.write("%s " % im_name)
             for item in voc_boxes[instance_idx]:
