@@ -94,10 +94,7 @@ def main():
     assert args.image_dir or args.images
     assert bool(args.image_dir) ^ bool(args.images)
 
-    if args.image_dir:
-        prefix_path = os.path.join(args.output_dir, args.image_dir+'_results')
-    else:
-        prefix_path = os.path.join(args.output_dir, args.images + '_results')
+    prefix_path = args.output_dir+'_results'
 
     if os.path.exists(prefix_path):
         os.rmdir(prefix_path)
