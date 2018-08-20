@@ -147,8 +147,6 @@ def main():
     else:
         imglist = args.images
     num_images = len(imglist)
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
 
     for i in tqdm(range(num_images)):
         im = cv2.imread(imglist[i])
