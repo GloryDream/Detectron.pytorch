@@ -171,7 +171,10 @@ def main():
         voc_boxes[:, 3:5] = boxes[:, 0:2] + boxes[:, 2:4] + 1
 
         for instance_idx, cls_idx in enumerate(classes):
-            cls_name = coco_instance.cats[cls_idx]['name']
+            if cls_idx in coco_instance.cats:
+                cls_name = coco_instance.cats[cls_idx]['name']
+            else:
+                cls_name = str(cls_idx)
             f = open(os.path.join(prefix_path, cls_name+".txt"), "a+")
             f.write("%s " % im_name)
             for item in voc_boxes[instance_idx]:
