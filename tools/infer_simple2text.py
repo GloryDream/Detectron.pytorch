@@ -21,6 +21,7 @@ import cv2
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+from pycocotools.coco import COCO
 
 import _init_paths
 import nn as mynn
@@ -31,6 +32,7 @@ import datasets.dummy_datasets as datasets
 import utils.misc as misc_utils
 import utils.net as net_utils
 import utils.vis as vis_utils
+from utils.vis import convert_from_cls_format
 from utils.detectron_weight_helper import load_detectron_weight
 from utils.timer import Timer
 
@@ -139,6 +141,7 @@ def main():
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
+    coco_instance = COCO('/Users/gongxinyu/Downloads/annotations/image_info_test2014.json')
     for i in xrange(num_images):
         print('img', i)
         im = cv2.imread(imglist[i])
@@ -149,19 +152,36 @@ def main():
         cls_boxes, cls_segms, cls_keyps = im_detect_all(maskRCNN, im, timers=timers)
 
         im_name, _ = os.path.splitext(os.path.basename(imglist[i]))
-        vis_utils.vis_one_image(
-            im[:, :, ::-1],  # BGR -> RGB for visualization
-            im_name,
-            args.output_dir,
-            cls_boxes,
-            cls_segms,
-            cls_keyps,
-            dataset=dataset,
-            box_alpha=0.3,
-            show_class=True,
-            thresh=0.7,
-            kp_thresh=2
-        )
+
+        boxes, _, _, classes = convert_from_cls_format(cls_boxes, cls_segms, cls_keyps)
+        if classes == []:
+            continue
+        voc_boxes = np.zeros_like(boxes)
+        voc_boxes[0:1] = boxes[4:5]
+        voc_boxes[:, 1:3] = boxes[:, 0:2] + 1
+        voc_boxes[:, 1:3] = boxes[:, 0:2] + boxes[:, 2:4] + 1
+
+        for instance_idx, cls_idx in enumerate(classes):
+            cls_name = coco_instance.cats[cls_idx]['name']
+            f = open(cls_name+".txt", "a+")
+            for item in voc_boxes[instance_idx]:
+                f.write("%f " % item)
+            f.write("\n")
+            f.close()
+
+        # vis_utils.vis_one_image(
+        #     im[:, :, ::-1],  # BGR -> RGB for visualization
+        #     im_name,
+        #     args.output_dir,
+        #     cls_boxes,
+        #     cls_segms,
+        #     cls_keyps,
+        #     dataset=dataset,
+        #     box_alpha=0.3,
+        #     show_class=True,
+        #     thresh=0.7,
+        #     kp_thresh=2
+        # )
 
     if args.merge_pdfs and num_images > 1:
         merge_out_path = '{}/results.pdf'.format(args.output_dir)
