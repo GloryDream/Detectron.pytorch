@@ -94,6 +94,15 @@ def main():
     assert args.image_dir or args.images
     assert bool(args.image_dir) ^ bool(args.images)
 
+    if args.image_dir:
+        prefix_path = os.path.join(args.output_dir, args.image_dir+'_results')
+    else:
+        prefix_path = os.path.join(args.output_dir, args.images + '_results')
+
+    if os.path.exists(prefix_path):
+        os.rmdir(prefix_path)
+        os.mkdir(prefix_path)
+
     if args.dataset.startswith("coco"):
         dataset = datasets.get_coco_dataset()
         cfg.MODEL.NUM_CLASSES = len(dataset.classes)
@@ -141,7 +150,7 @@ def main():
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
 
-    coco_instance = COCO('/Users/gongxinyu/Downloads/annotations/image_info_test2014.json')
+    coco_instance = COCO('/home/xinyu/dataset/coco/annotations/instances_val2017.json')
     for i in xrange(num_images):
         print('img', i)
         im = cv2.imread(imglist[i])
@@ -163,33 +172,12 @@ def main():
 
         for instance_idx, cls_idx in enumerate(classes):
             cls_name = coco_instance.cats[cls_idx]['name']
-            f = open(cls_name+".txt", "a+")
+            f = open(os.path.join(prefix_path, cls_name+".txt"), "a+")
+            f.write("%s " % im_name)
             for item in voc_boxes[instance_idx]:
                 f.write("%f " % item)
             f.write("\n")
             f.close()
-
-        # vis_utils.vis_one_image(
-        #     im[:, :, ::-1],  # BGR -> RGB for visualization
-        #     im_name,
-        #     args.output_dir,
-        #     cls_boxes,
-        #     cls_segms,
-        #     cls_keyps,
-        #     dataset=dataset,
-        #     box_alpha=0.3,
-        #     show_class=True,
-        #     thresh=0.7,
-        #     kp_thresh=2
-        # )
-
-    if args.merge_pdfs and num_images > 1:
-        merge_out_path = '{}/results.pdf'.format(args.output_dir)
-        if os.path.exists(merge_out_path):
-            os.remove(merge_out_path)
-        command = "pdfunite {}/*.pdf {}".format(args.output_dir,
-                                                merge_out_path)
-        subprocess.call(command, shell=True)
 
 
 if __name__ == '__main__':
