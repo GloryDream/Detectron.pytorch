@@ -157,9 +157,9 @@ def main():
         if classes == []:
             continue
         voc_boxes = np.zeros_like(boxes)
-        voc_boxes[0:1] = boxes[4:5]
+        voc_boxes[:, 0:1] = boxes[:, 4:5]
         voc_boxes[:, 1:3] = boxes[:, 0:2] + 1
-        voc_boxes[:, 1:3] = boxes[:, 0:2] + boxes[:, 2:4] + 1
+        voc_boxes[:, 3:5] = boxes[:, 0:2] + boxes[:, 2:4] + 1
 
         for instance_idx, cls_idx in enumerate(classes):
             cls_name = coco_instance.cats[cls_idx]['name']
