@@ -168,6 +168,8 @@ def main():
 
         for instance_idx, cls_idx in enumerate(classes):
             cls_name = dataset.classes[cls_idx]
+            if cls_name == 'motorcycle':
+                cls_name = 'motorbike'
             f = open(os.path.join(prefix_path, cls_name+".txt"), "a+")
             f.write("%s " % im_name)
             for item in voc_boxes[instance_idx]:

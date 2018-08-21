@@ -277,5 +277,5 @@ def calculate_map(args, classes):
 
 if __name__ == '__main__':
     args = parse_args()
-    classes = ['person', 'bicycle', 'car', 'bus', 'motorcycle']
+    classes = ['person', 'bicycle', 'car', 'bus', 'motorbike']
     calculate_map(args, classes)
