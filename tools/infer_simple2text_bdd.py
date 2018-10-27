@@ -43,6 +43,17 @@ from utils.timer import Timer
 cv2.ocl.setUseOpenCL(False)
 bdd_category = ['bus', 'traffic light', 'traffic sign', 'person', 'bike', 'truck', 'motor', 'car', 'train', 'rider']
 
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
+
 def parse_args():
     """Parse in command line arguments"""
     parser = argparse.ArgumentParser(description='Demonstrate mask-rcnn results')
@@ -177,14 +188,13 @@ def main():
             if cls_name not in bdd_category:
                 continue
 
-            writen_results.append({"name": imglist[i].split('.')[0],
+            writen_results.append({"name": imglist[i].split('.')[0].split('/')[-1],
                                    "timestamp": 1000,
                                    "category": cls_name,
-                                   "bbox": boxes[instance_idx, :4],
-                                   "score": boxes[instance_idx, -1]})
-
+                                   "bbox": list(boxes[instance_idx, :4]),
+                                   "score": float(boxes[instance_idx, -1])})
     with open(os.path.join(prefix_path, args.name + '.json'), 'w') as outputfile:
-        json.dump(writen_results, outputfile)
+        json.dump(writen_results, outputfile, cls=MyEncoder)
 
 
 if __name__ == '__main__':
