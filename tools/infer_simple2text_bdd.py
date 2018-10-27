@@ -191,8 +191,8 @@ def main():
             writen_results.append({"name": imglist[i].split('.')[0].split('/')[-1],
                                    "timestamp": 1000,
                                    "category": cls_name,
-                                   "bbox": list(boxes[instance_idx, :4]),
-                                   "score": float(boxes[instance_idx, -1])})
+                                   "bbox": boxes[instance_idx, :4],
+                                   "score": boxes[instance_idx, -1]})
     with open(os.path.join(prefix_path, args.name + '.json'), 'w') as outputfile:
         json.dump(writen_results, outputfile, cls=MyEncoder)
 
