@@ -184,7 +184,7 @@ def main():
             if cls_name not in bdd_category:
                 continue
 
-            writen_results.append({"name": imglist[i].split('.')[0].split('/')[-1],
+            writen_results.append({"name": imglist[i].split('/')[-1],
                                    "timestamp": 1000,
                                    "category": cls_name,
                                    "bbox": boxes[instance_idx, :4],
