@@ -340,3 +340,8 @@ Architecture specific configuration files are put under [configs](configs/). The
 
 ## Benchmark
 [BENCHMARK.md](BENCHMARK.md)
+
+
+## Inferring
+1. [ChinaMM18dehazing.md](ChinaMM18dehazing.md)
+2. [Evaluation of BDD.md](Evaluation of BDD.md)

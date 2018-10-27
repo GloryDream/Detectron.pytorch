@@ -109,13 +109,9 @@ def main():
     assert args.image_dir or args.images
     assert bool(args.image_dir) ^ bool(args.images)
 
-    prefix_path = args.output_dir+'_results'
+    prefix_path = args.output_dir
 
-    if os.path.exists(prefix_path):
-        shutil.rmtree(prefix_path)
-        os.mkdir(prefix_path)
-    else:
-        os.mkdir(prefix_path)
+    os.makedirs(prefix_path, exist_ok=True)
 
     if args.dataset.startswith("coco"):
         dataset = datasets.get_coco_dataset()
@@ -193,6 +189,7 @@ def main():
                                    "category": cls_name,
                                    "bbox": boxes[instance_idx, :4],
                                    "score": boxes[instance_idx, -1]})
+
     with open(os.path.join(prefix_path, args.name + '.json'), 'w') as outputfile:
         json.dump(writen_results, outputfile, cls=MyEncoder)
 
