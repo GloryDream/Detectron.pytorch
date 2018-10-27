@@ -23,6 +23,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 from tqdm import tqdm
+import json
 
 import _init_paths
 import nn as mynn
@@ -40,7 +41,7 @@ from utils.timer import Timer
 # OpenCL may be enabled by default in OpenCV3; disable it because it's not
 # thread safe and causes unwanted GPU memory allocations.
 cv2.ocl.setUseOpenCL(False)
-
+bdd_category = ['bus', 'traffic light', 'traffic sign', 'person', 'bike', 'truck', 'motor', 'car', 'train', 'rider']
 
 def parse_args():
     """Parse in command line arguments"""
@@ -76,6 +77,8 @@ def parse_args():
         default="infer_outputs")
     parser.add_argument(
         '--merge_pdfs', type=distutils.util.strtobool, default=True)
+    parser.add_argument(
+        '--name', type=str, required=True, help='The name of the output file')
 
     args = parser.parse_args()
 
@@ -148,6 +151,8 @@ def main():
         imglist = args.images
     num_images = len(imglist)
 
+    writen_results = []
+
     for i in tqdm(range(num_images)):
         im = cv2.imread(imglist[i])
         assert im is not None
@@ -158,24 +163,28 @@ def main():
 
         im_name, _ = os.path.splitext(os.path.basename(imglist[i]))
 
+        # boxs = [[x1, y1, x2, y2, cls], ...]
         boxes, _, _, classes = convert_from_cls_format(cls_boxes, cls_segms, cls_keyps)
         if classes == []:
             continue
-        voc_boxes = np.zeros_like(boxes)
-        voc_boxes[:, 0:1] = boxes[:, 4:5]
-        voc_boxes[:, 1:3] = boxes[:, 0:2] + 1
-        voc_boxes[:, 3:5] = boxes[:, 2:4] + 1
 
         for instance_idx, cls_idx in enumerate(classes):
             cls_name = dataset.classes[cls_idx]
             if cls_name == 'motorcycle':
-                cls_name = 'motorbike'
-            f = open(os.path.join(prefix_path, cls_name+".txt"), "a+")
-            f.write("%s " % im_name)
-            for item in voc_boxes[instance_idx]:
-                f.write("%f " % item)
-            f.write("\n")
-            f.close()
+                cls_name = 'motor'
+            elif cls_name == 'stop sign':
+                cls_name = 'traffic sign'
+            if cls_name not in bdd_category:
+                continue
+
+            writen_results.append({"name": imglist[i].split('.')[0],
+                                   "timestamp": 1000,
+                                   "category": cls_name,
+                                   "bbox": boxes[instance_idx, :4],
+                                   "score": boxes[instance_idx, -1]})
+
+    with open(os.path.join(prefix_path, args.name + '.json'), 'w') as outputfile:
+        json.dump(writen_results, outputfile)
 
 
 if __name__ == '__main__':
