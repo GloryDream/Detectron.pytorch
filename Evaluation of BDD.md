@@ -26,6 +26,8 @@ wget -c https://s3-us-west-2.amazonaws.com/detectron/35857952/12_2017_baselines/
 #### Step 1:
 ```
 python tools/infer_simple2text_bdd.py --dataset coco2017 --cfg configs/baselines/e2e_faster_rcnn_R-101-FPN_2x.yaml --load_detectron data/pretrained_model/e2e_faster_rcnn_R-101-FPN_2x/model_final.pkl --image_dir {your image folder} --output_dir {your results folder} --name {the name of the json file} 
+
+python tools/infer_simple2text_bdd.py --dataset coco2017 --cfg configs/baselines/e2e_faster_rcnn_R-101-FPN_2x.yaml --load_detectron data/pretrained_model/e2e_faster_rcnn_R-101-FPN_2x/model_final.pkl --image_dir ~/dataset/bdd100k/images/val_night_1280 --output_dir ~/dataset/bdd100k/images/val_night_1280 --name original
 ```
 
 #### Step 2:
