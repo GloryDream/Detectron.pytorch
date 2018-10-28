@@ -181,6 +181,8 @@ def main():
                 cls_name = 'motor'
             elif cls_name == 'stop sign':
                 cls_name = 'traffic sign'
+            elif cls_name == 'bicycle':
+                cls_name = 'bike'
             if cls_name not in bdd_category:
                 continue
 
