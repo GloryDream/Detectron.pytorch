@@ -166,9 +166,10 @@ def main():
 
     # validate
     demo_im = cv2.imread(imglist[0])
-    w, h, _ = np.shape(demo_im)
-    print(h)
-    print(args.height)
+    print(np.shape(demo_im))
+    h, w, _ = np.shape(demo_im)
+    #print(h)
+    #print(args.height)
     assert h == args.height
     assert w == args.width
     h_scale = 1280 / args.height
