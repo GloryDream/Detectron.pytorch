@@ -90,6 +90,10 @@ def parse_args():
         '--merge_pdfs', type=distutils.util.strtobool, default=True)
     parser.add_argument(
         '--name', type=str, required=True, help='The name of the output file')
+    parser.add_argument(
+        '--width', type=int, default=1280, help='The name of the output file')
+    parser.add_argument(
+        '--height', type=int, default=720, help='The name of the output file')
 
     args = parser.parse_args()
 
@@ -160,6 +164,14 @@ def main():
 
     writen_results = []
 
+    # validate
+    demo_im = cv2.imread(imglist[0])
+    h, w, _ = np.shape(demo_im)
+    assert h == args.height
+    assert w == args.width
+    h_scale = 1280 / args.height
+    w_scale = 720 / args.width
+
     for i in tqdm(range(num_images)):
         im = cv2.imread(imglist[i])
         assert im is not None
@@ -172,6 +184,13 @@ def main():
 
         # boxs = [[x1, y1, x2, y2, cls], ...]
         boxes, _, _, classes = convert_from_cls_format(cls_boxes, cls_segms, cls_keyps)
+
+        # scale
+        boxes[:, 0] = boxes[:, 0] * w_scale
+        boxes[:, 2] = boxes[:, 2] * w_scale
+        boxes[:, 1] = boxes[:, 1] * h_scale
+        boxes[:, 3] = boxes[:, 3] * h_scale
+
         if classes == []:
             continue
 
