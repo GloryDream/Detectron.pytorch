@@ -172,8 +172,8 @@ def main():
     #print(args.height)
     assert h == args.height
     assert w == args.width
-    h_scale = 1280 / args.height
-    w_scale = 720 / args.width
+    h_scale = 720 / args.height
+    w_scale = 1280 / args.width
 
     for i in tqdm(range(num_images)):
         im = cv2.imread(imglist[i])
