@@ -188,6 +188,8 @@ def main():
         # boxs = [[x1, y1, x2, y2, cls], ...]
         boxes, _, _, classes = convert_from_cls_format(cls_boxes, cls_segms, cls_keyps)
 
+        if boxes is None:
+            continue
         # scale
         boxes[:, 0] = boxes[:, 0] * w_scale
         boxes[:, 2] = boxes[:, 2] * w_scale
