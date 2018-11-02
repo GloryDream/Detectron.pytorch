@@ -172,7 +172,7 @@ def main():
     # w_scale = 1280 / args.width
 
     for i in tqdm(range(num_images)):
-        im = cv2.imread(imglist[i])
+        im = cv2.imread('/home/xinyu/dataset/Exclusively-Dark-Image-Dataset/ExDark/' + imglist[i])
         assert im is not None
 
         timers = defaultdict(Timer)
