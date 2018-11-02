@@ -77,8 +77,8 @@ def parse_args():
         '--load_detectron', help='path to the detectron weight pickle file')
 
     parser.add_argument(
-        '--image_dir',
-        help='directory to load images for demo')
+        '--img_list',
+        help='the pickle file of img names')
     parser.add_argument(
         '--images', nargs='+',
         help='images to infer. Must not use with --image_dir')
@@ -86,8 +86,6 @@ def parse_args():
         '--output_dir',
         help='directory to save demo results',
         default="infer_outputs")
-    parser.add_argument(
-        '--merge_pdfs', type=distutils.util.strtobool, default=True)
     parser.add_argument(
         '--name', type=str, required=True, help='The name of the output file')
     parser.add_argument(
@@ -156,24 +154,22 @@ def main():
                                  minibatch=True, device_ids=[0])  # only support single GPU
 
     maskRCNN.eval()
-    if args.image_dir:
-        imglist = misc_utils.get_imagelist_from_dir(args.image_dir)
-    else:
-        imglist = args.images
+
+    imglist = args.img_list
     num_images = len(imglist)
 
     writen_results = []
 
-    # validate
-    demo_im = cv2.imread(imglist[0])
-    print(np.shape(demo_im))
-    h, w, _ = np.shape(demo_im)
-    #print(h)
-    #print(args.height)
-    assert h == args.height
-    assert w == args.width
-    h_scale = 720 / args.height
-    w_scale = 1280 / args.width
+    # # validate
+    # demo_im = cv2.imread(imglist[0])
+    # print(np.shape(demo_im))
+    # h, w, _ = np.shape(demo_im)
+    # #print(h)
+    # #print(args.height)
+    # assert h == args.height
+    # assert w == args.width
+    # h_scale = 720 / args.height
+    # w_scale = 1280 / args.width
 
     for i in tqdm(range(num_images)):
         im = cv2.imread(imglist[i])
@@ -191,22 +187,41 @@ def main():
         if boxes is None:
             continue
         # scale
-        boxes[:, 0] = boxes[:, 0] * w_scale
-        boxes[:, 2] = boxes[:, 2] * w_scale
-        boxes[:, 1] = boxes[:, 1] * h_scale
-        boxes[:, 3] = boxes[:, 3] * h_scale
+        boxes[:, 0] = boxes[:, 0] #* w_scale
+        boxes[:, 2] = boxes[:, 2] #* w_scale
+        boxes[:, 1] = boxes[:, 1] #* h_scale
+        boxes[:, 3] = boxes[:, 3] #* h_scale
 
         if classes == []:
             continue
 
         for instance_idx, cls_idx in enumerate(classes):
             cls_name = dataset.classes[cls_idx]
-            if cls_name == 'motorcycle':
-                cls_name = 'motor'
-            elif cls_name == 'stop sign':
-                cls_name = 'traffic sign'
-            elif cls_name == 'bicycle':
-                cls_name = 'bike'
+            if cls_name == 'bicycle':
+                cls_name = 'Bicycle'
+            elif cls_name == 'dog':
+                cls_name = 'Dog'
+            elif cls_name == 'boat':
+                cls_name = 'Boat'
+            elif cls_name == 'bottle':
+                cls_name = 'Bottle'
+            elif cls_name == 'bus':
+                cls_name = 'Bus'
+            elif cls_name == 'car':
+                cls_name = 'Car'
+            elif cls_name == 'cat':
+                cls_name = 'Cat'
+            elif cls_name == 'chair':
+                cls_name = 'Chair'
+            elif cls_name == 'cup':
+                cls_name = 'Cup'
+            elif cls_name == 'motorcycle':
+                cls_name = 'Motorbike'
+            elif cls_name == 'person':
+                cls_name = 'People'
+            elif cls_name == 'dining table':
+                cls_name = 'Table'
+
             if cls_name not in bdd_category:
                 continue
 
