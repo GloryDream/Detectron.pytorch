@@ -81,7 +81,7 @@ def parse_args():
         help='the pickle file of img names')
     parser.add_argument(
         '--images', nargs='+',
-        help='images to infer. Must not use with --image_dir')
+        help='images to infer. Must not use with --img_list')
     parser.add_argument(
         '--output_dir',
         help='directory to save demo results',
@@ -108,8 +108,8 @@ def main():
     print('Called with args:')
     print(args)
 
-    assert args.image_dir or args.images
-    assert bool(args.image_dir) ^ bool(args.images)
+    assert args.img_list or args.images
+    assert bool(args.img_list) ^ bool(args.images)
 
     prefix_path = args.output_dir
 
