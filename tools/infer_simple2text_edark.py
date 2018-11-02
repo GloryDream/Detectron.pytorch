@@ -24,6 +24,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from tqdm import tqdm
 import json
+import pickle
 
 import _init_paths
 import nn as mynn
@@ -155,9 +156,11 @@ def main():
 
     maskRCNN.eval()
 
-    imglist = args.img_list
+    with open(args.img_list, 'rb') as f:
+        imglist = pickle.load(f)
     num_images = len(imglist)
-
+    print('num_images: ', num_images)
+    
     writen_results = []
 
     # # validate
