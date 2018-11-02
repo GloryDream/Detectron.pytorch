@@ -42,7 +42,8 @@ from utils.timer import Timer
 # OpenCL may be enabled by default in OpenCV3; disable it because it's not
 # thread safe and causes unwanted GPU memory allocations.
 cv2.ocl.setUseOpenCL(False)
-bdd_category = ['bus', 'traffic light', 'traffic sign', 'person', 'bike', 'truck', 'motor', 'car', 'train', 'rider']
+
+edark_category = ['Bicycle', 'Boat', 'Bottle', 'Bus', 'Car', 'Cat', 'Chair', 'Cup', 'Dog', 'Motorbike', 'People', 'Table']
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -160,7 +161,7 @@ def main():
         imglist = pickle.load(f)
     num_images = len(imglist)
     print('num_images: ', num_images)
-    
+
     writen_results = []
 
     # # validate
@@ -225,7 +226,7 @@ def main():
             elif cls_name == 'dining table':
                 cls_name = 'Table'
 
-            if cls_name not in bdd_category:
+            if cls_name not in edark_category:
                 continue
 
             writen_results.append({"name": imglist[i].split('/')[-1],
