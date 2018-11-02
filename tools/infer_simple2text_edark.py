@@ -17,10 +17,13 @@ matplotlib.use('Agg')
 
 import numpy as np
 import cv2
+import shutil
 
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+from tqdm import tqdm
+import json
 
 import _init_paths
 import nn as mynn
@@ -31,13 +34,25 @@ import datasets.dummy_datasets as datasets
 import utils.misc as misc_utils
 import utils.net as net_utils
 import utils.vis as vis_utils
+from utils.vis import convert_from_cls_format
 from utils.detectron_weight_helper import load_detectron_weight
 from utils.timer import Timer
 
 # OpenCL may be enabled by default in OpenCV3; disable it because it's not
 # thread safe and causes unwanted GPU memory allocations.
 cv2.ocl.setUseOpenCL(False)
+bdd_category = ['bus', 'traffic light', 'traffic sign', 'person', 'bike', 'truck', 'motor', 'car', 'train', 'rider']
 
+class MyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
 
 def parse_args():
     """Parse in command line arguments"""
@@ -73,6 +88,12 @@ def parse_args():
         default="infer_outputs")
     parser.add_argument(
         '--merge_pdfs', type=distutils.util.strtobool, default=True)
+    parser.add_argument(
+        '--name', type=str, required=True, help='The name of the output file')
+    parser.add_argument(
+        '--width', type=int, default=1280, help='The name of the output file')
+    parser.add_argument(
+        '--height', type=int, default=720, help='The name of the output file')
 
     args = parser.parse_args()
 
@@ -91,6 +112,10 @@ def main():
 
     assert args.image_dir or args.images
     assert bool(args.image_dir) ^ bool(args.images)
+
+    prefix_path = args.output_dir
+
+    os.makedirs(prefix_path, exist_ok=True)
 
     if args.dataset.startswith("coco"):
         dataset = datasets.get_coco_dataset()
@@ -136,11 +161,21 @@ def main():
     else:
         imglist = args.images
     num_images = len(imglist)
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)
 
-    for i in xrange(num_images):
-        print('img', i)
+    writen_results = []
+
+    # validate
+    demo_im = cv2.imread(imglist[0])
+    print(np.shape(demo_im))
+    h, w, _ = np.shape(demo_im)
+    #print(h)
+    #print(args.height)
+    assert h == args.height
+    assert w == args.width
+    h_scale = 720 / args.height
+    w_scale = 1280 / args.width
+
+    for i in tqdm(range(num_images)):
         im = cv2.imread(imglist[i])
         assert im is not None
 
@@ -149,27 +184,40 @@ def main():
         cls_boxes, cls_segms, cls_keyps = im_detect_all(maskRCNN, im, timers=timers)
 
         im_name, _ = os.path.splitext(os.path.basename(imglist[i]))
-        vis_utils.vis_one_image(
-            im[:, :, ::-1],  # BGR -> RGB for visualization
-            im_name,
-            args.output_dir,
-            cls_boxes,
-            cls_segms,
-            cls_keyps,
-            dataset=dataset,
-            box_alpha=0.3,
-            show_class=True,
-            thresh=0.7,
-            kp_thresh=2
-        )
 
-    if args.merge_pdfs and num_images > 1:
-        merge_out_path = '{}/results.pdf'.format(args.output_dir)
-        if os.path.exists(merge_out_path):
-            os.remove(merge_out_path)
-        command = "pdfunite {}/*.pdf {}".format(args.output_dir,
-                                                merge_out_path)
-        subprocess.call(command, shell=True)
+        # boxs = [[x1, y1, x2, y2, cls], ...]
+        boxes, _, _, classes = convert_from_cls_format(cls_boxes, cls_segms, cls_keyps)
+
+        if boxes is None:
+            continue
+        # scale
+        boxes[:, 0] = boxes[:, 0] * w_scale
+        boxes[:, 2] = boxes[:, 2] * w_scale
+        boxes[:, 1] = boxes[:, 1] * h_scale
+        boxes[:, 3] = boxes[:, 3] * h_scale
+
+        if classes == []:
+            continue
+
+        for instance_idx, cls_idx in enumerate(classes):
+            cls_name = dataset.classes[cls_idx]
+            if cls_name == 'motorcycle':
+                cls_name = 'motor'
+            elif cls_name == 'stop sign':
+                cls_name = 'traffic sign'
+            elif cls_name == 'bicycle':
+                cls_name = 'bike'
+            if cls_name not in bdd_category:
+                continue
+
+            writen_results.append({"name": imglist[i].split('/')[-1],
+                                   "timestamp": 1000,
+                                   "category": cls_name,
+                                   "bbox": boxes[instance_idx, :4],
+                                   "score": boxes[instance_idx, -1]})
+
+    with open(os.path.join(prefix_path, args.name + '.json'), 'w') as outputfile:
+        json.dump(writen_results, outputfile, cls=MyEncoder)
 
 
 if __name__ == '__main__':
