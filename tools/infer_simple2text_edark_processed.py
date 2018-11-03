@@ -119,8 +119,8 @@ def main():
     print('Called with args:')
     print(args)
 
-    assert args.img_list or args.images
-    assert bool(args.img_list) ^ bool(args.images)
+    assert args.img_dir or args.images
+    assert bool(args.img_dir) ^ bool(args.images)
 
     prefix_path = args.output_dir
 
