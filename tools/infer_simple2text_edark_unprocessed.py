@@ -79,7 +79,7 @@ def parse_args():
         '--load_detectron', help='path to the detectron weight pickle file')
 
     parser.add_argument(
-        '--img_dir',
+        '--img_list',
         help='the pickle file of img names')
     parser.add_argument(
         '--images', nargs='+',
@@ -98,15 +98,6 @@ def parse_args():
     args = parser.parse_args()
 
     return args
-
-
-def file_name(file_dir, form='jpg'):
-    file_list = []
-    for root, dirs, files in os.walk(file_dir):
-        for file in files:
-            if os.path.splitext(file)[1] == '.' + form:
-                file_list.append(os.path.join(root, file))
-    return sorted(file_list)
 
 
 def main():
@@ -166,12 +157,11 @@ def main():
 
     maskRCNN.eval()
 
-    # with open(args.img_list, 'rb') as f:
-    #     imglist = pickle.load(f)
-
-    imglist = file_name(args.img_dir)
+    with open(args.img_list, 'rb') as f:
+        imglist = pickle.load(f)
     num_images = len(imglist)
     print('num_images: ', num_images)
+
     writen_results = []
 
     # # validate
@@ -239,7 +229,7 @@ def main():
             if cls_name not in edark_category:
                 continue
 
-            writen_results.append({"name": imglist[i].split('/'),
+            writen_results.append({"name": imglist[i],
                                    "timestamp": 1000,
                                    "category": cls_name,
                                    "bbox": boxes[instance_idx, :4],
